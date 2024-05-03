@@ -20,7 +20,7 @@ if __name__ == "__main__":
     data_dir = "./datasets/"
     # ----------------------------------------------------------------------------------
     # choose model
-    vae_type = "timeVAE"  # vae_dense, vae_conv, timeVAE
+    vae_type = "vae_dense"  # vae_dense, vae_conv, timeVAE
     # ----------------------------------------------------------------------------------
     # read data
     dataset = "sine"  # sine, stocks, energy

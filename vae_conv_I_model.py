@@ -37,7 +37,7 @@ class VariationalAutoencoderConvInterpretable(BaseVariationalAutoencoder):
         """
         hidden_layer_sizes: list of number of filters in convolutional layers in encoder and residual connection of decoder.
         trend_poly: integer for number of orders for trend component. e.g. setting trend_poly = 2 will include linear and quadratic term.
-        num_gen_seas: Number of sine-waves to use to model seasonalities. Each sine wae will have its own amplitude, frequency and phase.
+        num_gen_seas: Number of sine-waves to use to model seasonalities. Each sine wave will have its own amplitude, frequency and phase.
         custom_seas: list of tuples of (num_seasons, len_per_season).
             num_seasons: number of seasons per cycle.
             len_per_season: number of epochs (time-steps) per season.
@@ -196,9 +196,7 @@ class VariationalAutoencoderConvInterpretable(BaseVariationalAutoencoder):
 
             season_params = Dense(
                 self.feat_dim * num_seasons, name=f"season_params_{i}"
-            )(
-                z
-            )  # shape: (N, D * S)
+            )(z)  # shape: (N, D * S)
             season_params = Reshape(target_shape=(self.feat_dim, num_seasons))(
                 season_params
             )  # shape: (N, D, S)
