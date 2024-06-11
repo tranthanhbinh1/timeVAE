@@ -52,8 +52,11 @@ def get_npz_data(input_file: str) -> np.ndarray:
         np.ndarray: The data array extracted from the .npz file.
     """
     loaded = np.load(input_file)
-    return loaded["data"]
-
+    try:
+        data = loaded["data"]
+    except Exception as e:
+        data = loaded['arr_0']
+    return data
 
 def split_data(
     data: np.ndarray, valid_perc: float, shuffle: bool = True, seed: int = 123
