@@ -1,57 +1,109 @@
 # TimeVAE for Synthetic Timeseries Data Generation
 
-TimeVAE implementation in keras/tensorflow implementation of timevae:
+TimeVAE is a model designed for generating synthetic time-series data using a Variational Autoencoder (VAE) architecture with interpretable components like level, trend, and seasonality. This repository includes the implementation of TimeVAE, as well as two baseline models: a dense VAE and a convolutional VAE.
 
-TimeVAE is used for synthetic time-series data generation. See paper:
+## Paper Reference
 
-https://arxiv.org/abs/2111.08095
+For a detailed explanation of the methodology, see the paper: [TIMEVAE: A VARIATIONAL AUTO-ENCODER FOR
+MULTIVARIATE TIME SERIES GENERATION](https://arxiv.org/abs/2111.08095).
 
-# Project Information
+## Project Information
 
-The methodology uses the Variational Autoencoder architecture. The decoder architecture is modified to include interpretable components of time-series, namely, level, trend, and seasonality.
+This project implements the Variational Autoencoder architecture with modifications to the decoder to include interpretable components of time-series data: level, trend, and seasonality. Additionally, it provides two other baseline models:
 
-`vae_conv_I_model.py` script contains the interpretable version of TimeVAE. See class `VariationalAutoencoderConvInterpretable`.
+- **Dense VAE**: A simple VAE with dense layers in the encoder and decoder.
+- **Convolutional VAE**: A VAE with convolutional layers in the encoder and decoder, referred to as the base model in the paper.
 
-`vae_conv_model.py` contains the base version of TimeVAE. See class `VariationalAutoencoderConv`
+See `./src/vae/` for the implementation of these models. Note that `vae_base.py` contains an abstract superclass and does not represent TimeVAE-Base.
 
-The VariationalAutoencoderConvInterpretable in `vae_conv_I_model.py` can also be used as base version by disabling the interpretability-related arguments during class initialization.
+## Project Structure
 
-See script `test_vae.py` for usage of the TimeVAE model.
+```plaintext
+TimeVAE/
+├── data/                         # Folder for datasets
+├── outputs/                      # Folder for model outputs
+│   ├── gen_data/                 # Folder for generated samples
+│   ├── models/                   # Folder for model artifacts
+│   └── tsne/                     # Folder for t-SNE plots
+├── src/                          # Source code
+│   ├── config/                   # Configuration files
+│   │   └── hyperparameters.yaml  # Hyperparameters settings
+│   ├── vae/                      # VAE models implementation
+│   │   ├── timevae.py            # Main TimeVAE model
+│   │   ├── vae_base.py           # Abstract superclass
+│   │   ├── vae_conv_model.py     # Convolutional VAE model (base model)
+│   │   ├── vae_dense_model.py    # Dense VAE model
+│   │   └── vae_utils.py          # utils to create, train, and use VAE models
+│   ├── data_utils.py             # utils for data loading, splitting and scaling
+│   ├── paths.py                  # path variables for config file, data, models, and outputs
+│   ├── vae_pipeline.py           # Main pipeline script
+│   └── visualize.py              # Scripts for visualization, including t-SNE plots
+├── LICENSE.md                    # License information
+├── README.md                     # Readme file
+└── requirements.txt              # Dependencies
 
-Note that `vae_base.py` script contains an abstract super-class. It doesnt actually represent TimeVAE-Base.
+```
 
-## Usage
+## Installation
 
-- Create your virtual environment and install dependencies listed in `requirements.txt`.
-- Prepare your data in the format of numpy array with shape `(n_samples, n_timesteps, n_features)` and save it in the `./datasets/` folder in the `.npz` format.
-- Update the path to your data in the `test_vae.py` script. You can specify the file name in the `input_file` variable.
-- Choose the model near the top of the `test_vae.py` script using the `vae_type` variable. You can choose between `vae_dense`, `vae_conv`, and `timeVAE` for the dense, convolutional (referred as the base model in paper), and interpretable versions of TimeVAE, respectively.
-- Set the hyperparameters for the model. Key hyperparameters are:
-  - `latent_dim` - the number of latent dimensions. Default value is 8.
-  - `hidden_layer_sizes` - the number of hidden units in the encoder and decoder. For the dense model, it refers to the number of hidden units in the dense layers. For the convolutional model, it refers to the number of filters in the convolutional layers. Default value is [50, 100, 200]
-  - `reconstruction_wt` - A parameter which is the weight given to the reconstruction loss. The VAE loss is the sum of two losses: the reconstruction loss and the KL divergence loss. The reconstruction loss is weighted by this parameter. The higher the weight to the reconstruction loss, the more emphasis is given to the reconstruction loss, and lower to the KL divergence loss - which means that the embeddings are less likely to conform to the prior distribution. This will likely erode the quality of prior samples although the posterior samples may be better. Default value is 3.0
-  - `batch_size` - the batch size for training the model. Defaut value is 32.
-- You can also set the hyperparameters specific to the interpretability components of the TimeVAE model.
-- Note that the default hyperparameters tend to perform well on most datasets. Still, you may need to tune the hyperparameters for your specific dataset.
-- Run the script using `python test_vae.py`. Note that the script also preprocesses the data using a custom MinMax scaler.
-  - The trained model will be saved in the `./models/` folder.
-  - Generated prior synthetic samples will be saved in the `./outputs/` folder.
+Create a virtual environment and install dependencies:
 
-## Requirements
-
-Dependencies are listed in the file `requirements.txt`.
-You can install these packages by running the following command from the root of your project directory:
-
-```python
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 pip install -r requirements.txt
 ```
 
+## Usage
+
+1. **Prepare Data**: Save your data as a numpy array with shape `(n_samples, n_timesteps, n_features)` in the `./data/` folder in `.npz` format. The filename without the extension will be used as the dataset name (e.g., `my_data.npz` will be referred to as `my_data`). Alternatively, use one of the existing datasets provided in the `./data/` folder.
+
+2. **Configure Pipeline**:
+
+   - Update the dataset name and model type in `./src/vae_pipeline.py`:
+     ```python
+     dataset = "my_data"  # Your dataset name
+     model_name = "timeVAE"  # Choose between vae_dense, vae_conv, or timeVAE
+     ```
+   - Set hyperparameters in `./src/config/hyperparameters.yaml`. Key hyperparameters include `latent_dim`, `hidden_layer_sizes`, `reconstruction_wt`, and `batch_size`.
+
+3. **Run the Script**:
+
+   ```bash
+   python src/vae_pipeline.py
+   ```
+
+4. **Outputs**:
+   - Trained models are saved in `./outputs/models/<dataset_name>/`.
+   - Generated synthetic data is saved in `./outputs/gen_data/<dataset_name>/` in `.npz` format.
+   - t-SNE plots are saved in `./outputs/tsne/<dataset_name>/` in `.png` format.
+
+## Hyperparameters
+
+The four key hyperparameters for the VAE models are:
+
+- `latent_dim`: Number of latent dimensions (default: 8).
+- `hidden_layer_sizes`: Number of hidden units or filters (default: [50, 100, 200]).
+- `reconstruction_wt`: Weight for the reconstruction loss (default: 3.0).
+- `batch_size`: Training batch size (default: 16).
+
+For `timeVAE`:
+
+- `trend_poly`: Degree of polynomial trend component (default: 0).
+- `custom_seas`: Custom seasonalities as a list of tuples (default: null).
+- `use_residual_conn`: Use residual connection (default: true).
+
+> The default settings for the timeVAE model set it to operate as the base model without interpretable components.
+
+**Note**  
+The default hyperparameters in the `./src/config/hyperparameters.yaml` file have been identified after extensive testing on numerous datasets and tend to perform well on most datasets. However, you may want to tune these hyperparameters for your specific dataset.
+
 ## License
 
-This project is licensed under the MIT License - see the `LICENSE.md` file for details.
+This project is licensed under the MIT License. See the `LICENSE` file for details.
 
 ## Contact Information
 
-You can contact the lead-author of the paper at: <lead_author_first_name>.<lead_author_last_name>@gmail.com
+For any inquiries or collaborations, please contact the lead author at: `<lead_author_first_name>.<lead_author_last_name>@gmail.com`.
 
-See the author names in the paper linked above.
+See the paper for author details.
